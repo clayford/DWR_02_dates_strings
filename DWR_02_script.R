@@ -20,7 +20,7 @@ library(lubridate)
 # downloaded from the following site:
 # http://earthquake.usgs.gov/earthquakes/feed/v1.0/csv.php
 
-URL1 <- "http://people.virginia.edu/~jcf2d/data/earthquakes.zip"
+URL1 <- "https://github.com/clayford/DWR_02_dates_strings/raw/main/earthquakes.zip"
 data1 <- basename(URL1)
 download.file(url = URL1, destfile = data1)
 unzip(data1)
@@ -38,7 +38,7 @@ str(quakes)
 # dates, descriptions, and outcomes, as well as the employers' names and
 # locations. Source: https://www.osha.gov/severeinjury/index.html
 
-URL2 <- "http://people.virginia.edu/~jcf2d/data/severeinjury2016.zip"
+URL2 <- "https://github.com/clayford/DWR_02_dates_strings/raw/main/severeinjury2016.zip"
 data2 <- basename(URL2)
 download.file(url = URL2, destfile = data2)
 unzip(data2)
@@ -48,7 +48,7 @@ str(injuries)
 # Release dates, run times and box office gross of the Marvel Cinematic
 # Universe.
 # https://en.wikipedia.org/wiki/List_of_Marvel_Cinematic_Universe_films
-mcu <- read.csv("http://people.virginia.edu/~jcf2d/data/marvel_movies.csv",
+mcu <- read.csv("https://raw.githubusercontent.com/clayford/DWR_02_dates_strings/main/marvel_movies.csv",
                stringsAsFactors = FALSE)
 str(mcu)
 # Use the parse_number() function from the readr() package to format the
@@ -59,14 +59,14 @@ mcu
 
 # Creating date/times -----------------------------------------------------
 
-# When working with dates, We either work with dates or date-times. 
+# When working with dates, We either work with dates or date-times.
 
-# A date example is April 5, 1973. 
+# A date example is April 5, 1973.
 # A date-time example is 1973-04-05 12:23:12.
 
 # To format dates, lubridate provides a series of functions that are a
 # permutation of the letters "m", "d" and "y" to represent the ordering of
-# month, day and year. 
+# month, day and year.
 
 # Examples:
 mdy("April 5, 1973")
@@ -102,7 +102,7 @@ bday2
 # This is stored as number of seconds since (or before) 01-Jan-1970
 as.numeric(bday2)
 
-# lubridate can handle times with AM/PM times. It will convert it to 24 hour 
+# lubridate can handle times with AM/PM times. It will convert it to 24 hour
 # time. For example, here's a character string that says 3:11 PM. lubridate
 # converts it to 15:11.
 bday3 <- ymd_hm("1973-04-05 3:11 PM")
@@ -208,14 +208,14 @@ mcu
 table(mcu$month)
 
 # total box office by year
-bo_total <- mcu %>% 
-  group_by(year) %>% 
+bo_total <- mcu %>%
+  group_by(year) %>%
   summarize(totalBoxOffice = sum(box_office))
 bo_total
 
 # visualize total box office by year
 ggplot(bo_total, aes(x = year, y = totalBoxOffice)) +
-  geom_point() + 
+  geom_point() +
   geom_line() +
   scale_x_continuous(breaks = 2008:2018) +
   scale_y_continuous(labels = scales::dollar) +
@@ -230,7 +230,7 @@ ggplot(bo_total, aes(x = year, y = totalBoxOffice)) +
 # YOUR TURN #2 ------------------------------------------------------------
 
 # 1. Add a column called "Day_of_Week" to the injuries data frame that indicates what
-# day of week the injury occured on, such as "Friday" or "Saturday". 
+# day of week the injury occured on, such as "Friday" or "Saturday".
 
 
 
@@ -256,12 +256,12 @@ ggplot(bo_total, aes(x = year, y = totalBoxOffice)) +
 # 2. Interval
 # 3. Period
 
-# The most simple is Duration. This is simply a span of time measured in 
-# seconds. There is no start date. 
- 
+# The most simple is Duration. This is simply a span of time measured in
+# seconds. There is no start date.
+
 # An Interval is also measured in seconds but has an associated start date.
 # An Interval measures elapsed seconds between two specific points in time.
- 
+
 # A Period records a time span in calendar time. For example, we can add 1 month
 # to February 1 and get March 1, regardless of leap years. It allows us to
 # perform calculations in calendar time as opposed to number of seconds.
@@ -274,13 +274,13 @@ end <- mdy_hm("3-12-2017 5:21 PM", tz = "US/Eastern")
 
 # Let's first create an interval. We can do that with the interval operator:
 # %--%.
-time.interval <- start %--% end 
+time.interval <- start %--% end
 
 # Notice how it prints
 time.interval
 as.numeric(time.interval)
 
-# How long is this interval? We can answer in two ways: (1) in the precise form 
+# How long is this interval? We can answer in two ways: (1) in the precise form
 # of a duration, or (2) in less-precise the calendar/clock form. For this we can
 # use as.duration and as.period.
 
@@ -288,9 +288,9 @@ time.interval
 as.duration(time.interval)
 as.period(time.interval)
 
-# The duration returns a precise answer of 82800 seconds, or 23 hours. The 
-# period returns a human-like answer of 1 day. The period perhaps makes more 
-# sense since our start and end date is one day apart, but the duration is more 
+# The duration returns a precise answer of 82800 seconds, or 23 hours. The
+# period returns a human-like answer of 1 day. The period perhaps makes more
+# sense since our start and end date is one day apart, but the duration is more
 # precise. It takes daylight savings in account and returns the actual amount of
 # elapsed time.
 
@@ -315,7 +315,7 @@ mcu %>% select(movie, run_time, run_time2)
 
 # We can calculate time spans between dates in a single vector using the
 # int_diff() function.
-Dates <- mdy_hm(c("6/14/18 1:12 PM", "6/15/18 3:30 PM", 
+Dates <- mdy_hm(c("6/14/18 1:12 PM", "6/15/18 3:30 PM",
                   "6/15/18 8:24 PM", "6/16/18 9:15 AM"))
 
 # Since we have 4 dates, we'll have 3 time spans.
@@ -328,18 +328,18 @@ as.duration(int_diff(Dates))
 
 # time span conversions ---------------------------------------------------
 
-# Durations are output precisely as seconds, but we might want to view that as 
+# Durations are output precisely as seconds, but we might want to view that as
 # precise hours or weeks. We can do that with the time_length() function.
 
 # Example 1: My son was born April 16, 2001. How old is he right now?
 born <- mdy("April 16, 2001")
 
 # first, create the interval:
-life <- born %--% today() 
+life <- born %--% today()
 life               # interval
 
 # View interval as a duration
-as.duration(life) 
+as.duration(life)
 
 # View interval as a period
 as.period(life)
@@ -361,7 +361,7 @@ time_length(int_diff(mcu$release_date), unit = "months")
 # To add to the mcu data frame, we need to add a missing field to the beginning
 # of the vector.
 mcu$release_interval <- c(NA, time_length(int_diff(mcu$release_date), unit = "months"))
-mcu %>% 
+mcu %>%
   select(movie, release_date, release_interval)
 
 # examine time between releases
@@ -438,7 +438,7 @@ head(injuries$EventTitle)
 str_replace(string = head(injuries$EventTitle), ", n.e.c.", "")
 
 # WARNING! Be careful with periods when defining patterns. Recall that stringr
-# functions assume a regular expression by default. 
+# functions assume a regular expression by default.
 str_replace(string = c("Fall, n.e.c.", "Leg, knee cap"), "n.e.c.", "")
 
 # Two ways to ensure periods are literal:
@@ -511,27 +511,27 @@ head(injuries$EventTitle)
 # can use regular expressions to define patterns.
 
 # Example 1: extract one or more numbers at the beginning of the string.
-str_extract(c("12 points", "23 pts", "15"), 
+str_extract(c("12 points", "23 pts", "15"),
             pattern = "^\\d+")
 # To make numeric
-as.numeric(str_extract(c("12 points", "23 pts", "15"), 
+as.numeric(str_extract(c("12 points", "23 pts", "15"),
             pattern = "^\\d+"))
 
 # Example 2: extract one or more characters at the beginning of the string
 # followed by a colon.
-str_extract(c("Clay: I ran.", 
-              "Nancy: Where?", 
-              "Clay: I ran so far away."), 
+str_extract(c("Clay: I ran.",
+              "Nancy: Where?",
+              "Clay: I ran so far away."),
             pattern = "^\\w+(?=:)")
 
 # Example 3: extract the name of the journal
-refs <- c('A. Agresti and B.A. Coull, Approximate is better than "exact" for 
-          interval estimation of binomial proportions, American Statistician, 
+refs <- c('A. Agresti and B.A. Coull, Approximate is better than "exact" for
+          interval estimation of binomial proportions, American Statistician,
           52:119-126, 1998.',
-          'R.G. Newcombe, Logit confidence intervals and the inverse sinh 
+          'R.G. Newcombe, Logit confidence intervals and the inverse sinh
           transformation, American Statistician, 55:200-202, 2001.',
-          'L.D. Brown, T.T. Cai and A. DasGupta, Interval estimation for a 
-          binomial proportion (with discussion), Statistical Science, 
+          'L.D. Brown, T.T. Cai and A. DasGupta, Interval estimation for a
+          binomial proportion (with discussion), Statistical Science,
           16:101-133, 2001')
 refs
 
@@ -558,9 +558,9 @@ str_extract(str_squish(refs), pattern = "(?<=, )[a-zA-Z ]+(?=, [:digit:]+)")
 
 # The str_detect function returns TRUE or FALSE if a pattern is found.
 
-# Example 1: return TRUE if number is toll-free 
+# Example 1: return TRUE if number is toll-free
 p <- "^(800|888|877|866|855|844|833)"
-str_detect(c("800-212-3433", "434-295-1888", "888-555-1212"), 
+str_detect(c("800-212-3433", "434-295-1888", "888-555-1212"),
            pattern = p)
 
 # Example 2: subset mcu data frame for Iron Man movies
@@ -572,7 +572,7 @@ mean(str_detect(state.name, "a$"))
 # or using the pipe
 str_detect(state.name, "a$") %>% mean()
 
-# The str_subset function 
+# The str_subset function
 
 # Example 4: which states end in "a"; which end in "ia$"
 str_subset(state.name, "a$")
@@ -583,7 +583,7 @@ str_subset(state.name, "ia$")
 
 
 # 1) In the injuries data frame, what proportion of reports had a Final
-# Narrative mention "fell" or "fall"? 
+# Narrative mention "fell" or "fall"?
 str_detect(injuries$FinalNarrative, "(fell|fall)") %>% mean()
 
 # 2) In the injuries data frame, how many reports had a Final Narrative that
@@ -615,16 +615,16 @@ mdy_hm(dateEx, tz = "US/Eastern")
 
 # Notice the last date is EST instead of EDT. EST means "Eastern Standard Time".
 # EDT means "Eastern Daylight Time". Any day and time that falls during Daylight
-# Savings is EDT. Otherwise it's EST. How do we know the appropriate time zone 
+# Savings is EDT. Otherwise it's EST. How do we know the appropriate time zone
 # phrase to use in the tz argument? We can use the OlsonNames() function to see
-# a character vector of all time zone names. Just enter OlsonNames() in the R 
+# a character vector of all time zone names. Just enter OlsonNames() in the R
 # console and hit Enter.
 
 OlsonNames()[1:5]
 length(OlsonNames())
 
 # We can see our current time zone with the Base R function Sys.timezone()
-Sys.timezone() 
+Sys.timezone()
 
 # We can combine an existing date-time with a new time zone using lubridate's
 # with_tz() and force_tz().
@@ -650,14 +650,14 @@ force_tz(NOW, tzone = "Europe/London")
 # To illustrate let's create some fake data.
 dat <- tibble(x = 1:5)
 
-# Let's say we want to add a date in increments of one day starting on 
+# Let's say we want to add a date in increments of one day starting on
 # "2017-01-01". Using lubridate we can specify a date and then add a certain
 # number of days using either the days() or ddays() function, like so:
 
 mutate(dat, date = ymd("2017-01-01") + ddays(0:4))
 mutate(dat, date = ymd("2017-01-01") + days(0:4))
 
-# days() creates a period object, while ddays() creates a duration object. In 
+# days() creates a period object, while ddays() creates a duration object. In
 # this case it doesn't matter what we use. For more information see the Time
 # Spans section of R for Data Science:
 # http://r4ds.had.co.nz/dates-and-times.html#time-spans
@@ -685,8 +685,8 @@ leap_year(2000:2018)
 
 # date rounding with round_date(), floor_date(), and ceiling_date()
 
-# round_date() rounds to nearest value of specified time unit. 
-# floor_date() rounds down to nearest boundary of specified time unit. 
+# round_date() rounds to nearest value of specified time unit.
+# floor_date() rounds down to nearest boundary of specified time unit.
 # ceiling_date() rounds up to nearest boundary of specified time unit.
 day1 <- now()
 day1
@@ -703,7 +703,7 @@ ceiling_date(day1, "hour")
 # fraction of its year, with decimal_date()
 
 day2 <- ymd("2017-07-01")
-decimal_date(day2)  
+decimal_date(day2)
 
 # 2017.496 indicates that 2017-07-01 is about half-way through 2017.
 
@@ -735,9 +735,9 @@ str(days3)
 days3_ch <- as.character(days3)
 str(days3_ch)
 
-# But what if we want the date to appear in a certain format, such as July 20, 
-# 2017? We can use lubridate's stamp() function. This function is a little 
-# unusual in the way it works. You provide it with a human-frendly template, 
+# But what if we want the date to appear in a certain format, such as July 20,
+# 2017? We can use lubridate's stamp() function. This function is a little
+# unusual in the way it works. You provide it with a human-frendly template,
 # such as "Recorded at 10 am, September 2002" and then call it on a date object.
 # Examples will hopefully make this clear. Here are the examples on the stamp
 # help page.
@@ -761,7 +761,7 @@ stamp("12/31/99")(days3)
 # turn off the messages!
 stamp("12/31/99", quiet = TRUE)(days3)
 
-# We can also use the base R format function with strptime codes. See ?strptime 
+# We can also use the base R format function with strptime codes. See ?strptime
 # for codes.
 
 format(days3, format = "%B %d, %Y")
@@ -807,7 +807,7 @@ rm(gender_factor, gender_char, nums_factor)
 state.name
 state.abb
 
-# Using paste with collapse="|" we can build a really big regular expression! 
+# Using paste with collapse="|" we can build a really big regular expression!
 # Notice we include the '$' to indicate the state name or abbreviation comes at
 # the end of the string.
 regx <- str_c('(',str_c(c(state.name, state.abb), collapse = "|"),')$')
@@ -816,8 +816,8 @@ regx <- str_c('(',str_c(c(state.name, state.abb), collapse = "|"),')$')
 quakes$us.state <- str_extract(quakes$place, pattern = regx)
 
 # Let's sample a few and check
-quakes %>% 
-  select(place, us.state) %>% 
+quakes %>%
+  select(place, us.state) %>%
   sample_n(10)
 
 # How many non-missing do we have? (ie, how many earthquakes were in the US?)
@@ -830,8 +830,8 @@ mean(!is.na(quakes$us.state))
 table(quakes$us.state)
 
 # Quick way to fix
-quakes$us.state <- str_replace(quakes$us.state, 
-                               pattern = "CA", 
+quakes$us.state <- str_replace(quakes$us.state,
+                               pattern = "CA",
                                replacement = "California")
 
 
@@ -851,8 +851,8 @@ table(quakes$us.state, quakes$type)
 # Get one or more of everything that follows "of "
 quakes$place2 <- str_extract(quakes$place, pattern = "(?<=of ).+")
 # and replace CA with California
-quakes$place2 <- str_replace(quakes$place2, 
-                                pattern = "CA", 
+quakes$place2 <- str_replace(quakes$place2,
+                                pattern = "CA",
                                 replacement = "California")
 
 # Which places had the most earthquakes?
@@ -867,8 +867,8 @@ today() # date
 now() # date-time
 
 # Base R versions
-Sys.Date() 
-Sys.time() 
+Sys.Date()
+Sys.time()
 
 
 
