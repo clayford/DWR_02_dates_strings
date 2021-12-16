@@ -1,0 +1,488 @@
+---
+title: 'Data Wrangling in R: Dates and Strings'
+author: "Clay Ford"
+date: "Fall 2018"
+output: 
+  beamer_presentation: 
+    fig_caption: false
+---
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Agenda
+
+Cover the following topics with examples and exercises using the `lubridate` and `stringr` packages:
+
+- Working with date and date-time data
+- Working with character data (ie, strings)
+
+## Time
+
+Our data often includes a time component. We want R to recognize, for example, that...
+
+- April 2018 comes after January 2018
+- There were 29 days between February 1, 2016 and March 1, 2016 (leap year)
+- 30 minutes elapsed between 11:45 AM and 12:15 PM
+- 23 hours elapsed between March 11, 2017, 5:00 AM and March 12, 2017, 5:00 AM (dayight savings)
+- June 27, 2018 was a Wednesday
+
+We will use the `lubridate` package to ensure R handles dates and times appropriately.
+
+## Dates and Date-times in R
+
+- When a date (eg, April 5, 1982) is formatted as a "date" in R, it becomes the number of days after (or before) January 1, 1970.
+- When a date-time (eg, April 5, 1982 1:15 PM) is formatted as a "date-time", it becomes the number of seconds after (or before) January 1, 1970.
+- This simplifies the calculation of time spans.
+- `lubridate` helps us parse dates and date-times as well as perform calculations and conversions of such values.
+
+## Parsing dates
+
+- `lubridate` provides a series of functions for parsing dates that are a permutation of the letters "m", "d" and "y" to represent the ordering of month, day and year. 
+- `lubridate` provides functions for every permutation of "m", "d", "y".
+
+```{r message=FALSE, echo=TRUE}
+library(lubridate)
+d <- "April 5, 1982"
+d <- mdy(d)
+d
+```
+
+
+## Printed values vs. stored values
+
+- A date that is parsed with `lubridate` will print to the console and appear in data frames as if it's character data.
+- Use `as.numeric` to see the stored value.
+
+```{r echo=TRUE}
+d
+as.numeric(d) # days since 1/1/1970
+
+
+```
+
+
+## Parsing date-times
+
+To parse date-times, append either `_h`, `_hm`, or `_hms` to the "mdy" function.
+
+```{r echo=TRUE}
+d <- "April 5, 1982 1:15 PM"
+d <- mdy_hm(d)
+d
+as.numeric(d) # seconds since 1/1/1970
+```
+
+
+## Parsing times
+
+`lubridate` also allows us to parse hours, minutes and seconds using `hm`, `ms` and `hms`
+
+```{r echo=TRUE}
+t <- c("1:23","2:34")
+hm(t)
+ms(t)
+```
+
+The output is nicely formatted, but these are stored as seconds
+
+## Intervals, Durations and Periods
+
+`lubridate` provides three classes, or three different ways, to distinguish between different types of time spans.
+
+1. Interval
+2. Duration
+3. Period
+
+
+## Interval
+
+- A span of time measured in seconds with a start date.
+- Define an Interval using the `%--%` operator.
+
+```{r echo=TRUE}
+start <- mdy_hm("3-11-2017 5:21", tz = "US/Eastern")
+end <- mdy_hm("3-12-2017 5:21", tz = "US/Eastern")
+time.interval <- start %--% end
+time.interval
+as.numeric(time.interval)
+```
+
+
+## Duration
+
+- A span of time measured in seconds with no start date.
+- Convert an Interval to a Duration using `as.duration`
+
+```{r echo=TRUE}
+as.duration(time.interval)
+```
+
+- Because Daylight Savings went into effect at 2:00 AM during the interval, an hour was skipped. 
+
+## Period
+
+- A span of time measured in calendar time with no start date.
+- Convert an Interval to a Period using `as.period`
+
+```{r echo=TRUE}
+as.period(time.interval)
+```
+
+- Yes, Daylight Savings happened, but in calendar time 1 day elapsed
+
+
+## Time spans between the elements of a vector
+
+Sometimes we want to calculate intervals between dates in a vector. We can use `int_diff` for this.
+
+```{r echo=TRUE}
+occurred <- mdy("5/6/15","6/12/15","8/23/15")
+as.duration(int_diff(occurred))
+```
+
+Notice the result is always one less than the original vector.
+
+## Calculations and conversions
+
+Once we format dates and define our time span we often want to do some calculations and conversions. 
+
+- convert seconds to minutes
+- convert seconds to days
+- convert days to weeks
+- determine mean amount of elapsed time
+- determine a date's day of the week
+
+
+## Conversions
+
+The `time_length` function computes the exact length of a time span in units we speciy:
+
+```{r echo=TRUE}
+usa <- mdy("7/4/1776") %--% mdy("9/18/2018")
+as.duration(usa)
+# convert to days
+time_length(usa, unit = "days")
+
+```
+
+## Conversions
+
+```{r echo=TRUE}
+# convert to hours
+time_length(usa, unit = "hours")
+# convert to weeks
+time_length(usa, unit = "weeks")
+
+
+```
+
+
+## Conversions
+
+```{r echo=TRUE}
+# hours:minutes:seconds
+t <- hms("32:24:32")
+# convert to minutes
+time_length(t, unit = "minutes")
+# convert to days
+time_length(t, unit = "days")
+
+```
+
+
+
+## Calculations
+
+
+Since time intervals are stored as number of seconds, we can easily calculate means, medians, variance, etc.
+
+Example: average number of days for subjects in a study
+
+```{r echo=TRUE}
+start <- c("1/3/12","1/6/12","2/3/12","2/6/12","2/22/12")
+end <- c("1/23/12","2/1/12","3/1/12","2/19/12","3/9/12")
+int <- mdy(start) %--% mdy(end)
+mean(time_length(int, "days"))
+```
+
+
+## Extracting date components
+
+`lubridate` provides functions such as `month`, `day`, `wday`, `yday`, etc. to extract date components
+
+```{r echo=TRUE}
+d <- mdy("5/5/01")
+month(d, label = TRUE) # month
+wday(d, label = TRUE) # week day
+```
+
+
+
+## Time to practice!
+
+Let's go the workshop R script for demonstrations and exercises.
+
+
+## Character strings
+
+Our data often include character strings such as names, locations, descriptions, categories or unwanted "junk". Examples of manipulating character strings include...
+
+
+- Getting rid of whitespace (`" Texas "`)
+- Converting text to UPPERCASE or lowercase
+- Extract parts of a string (Eg, get extract "`23`" from "`<b>23</b>`")
+- Padding strings with zeroes, so 9, 10, 11 become 009, 010, 011
+- Identify patterns of text for purpose of extracting or subsetting data
+
+We will use the `stringr` package to work with character strings.
+
+## Character data in R
+
+- Character data have quotes when printed to console
+- But data with quotes does not mean it's character!
+- use `is.character()` to find out.
+- Character data need to be surrounded with quotes (either single or double) when used in `R` code
+
+```{r echo=TRUE}
+(x <- c("a","b","c","12"))
+is.character(x)
+```
+
+
+## Beyond letters and numbers
+
+Character data includes apostrophes, quotes, other punctuation, line breaks, carriage returns, spaces, and tabs. These can look different depending on the system we use and whether we're printing them to the console or entering them in an R script.
+
+```{r echo=TRUE}
+people <- '"Tiny Rick" Sanchez
+Morty Smith
+D\'wayne'
+people
+```
+
+## Beyond letters and numbers
+
+Some guidelines:
+
+- Use single quotes around text that include double quotes (and vice versa)
+- Or "escape" quotes with a backslash if being entered within quotes of the same type
+- You can enter line breaks, but they appear as "`\n`" when printed to console
+- See `?Quotes` for much more information
+
+## Character versus factor
+
+- Sometimes data that appear to be character are actually stored as a _factor_
+- factors are character data that are stored as integers but have character labels
+- factors are good for using character data in statistical modeling (eg, ANOVA, regression, etc)
+- If your character data is stored as a factor, R automatically handles conversion to dummy matrices necessary for statistical modeling routines
+- factors do not have quotes when printed to console
+
+
+## Factor data in R
+
+```{r echo=TRUE}
+(y <- factor(c("a","b","c","c")))
+is.character(y)
+
+```
+
+
+## When to convert factors to character
+
+- If you plan to clean or manipulate character data, make sure it's character, not factor.
+- Change factor to character with `as.character` function
+```{r echo=TRUE}
+(y <- factor(c("a","b","c","c")))
+(y <- as.character(y))
+```
+
+## The `stringr` package
+
+- "a clean, modern interface to common string operations"
+- Comes with a thorough but easy-to-follow vignette
+- The main stringr functions all begin with `str_`
+- `stringr` functions are actually wrappers for functions in the `stringi` package
+
+
+## Get rid of whitespace
+
+- Use `str_trim` to trim leading and trailing whitespace
+- Use `str_squish` to remove all excess whitespace, even in the middle of string
+
+```{r echo=TRUE}
+library(stringr)
+str_trim(" Subject missed    follow up appointment   ")
+str_squish(" Subject missed    follow up appointment   ")
+
+```
+
+## Convert case of string
+
+- `str_to_upper`, `str_to_lower`, and `str_to_title` do what you expect
+
+```{r echo=TRUE}
+str_to_upper("day one")
+str_to_lower("DAY ONE")
+str_to_title("day one")
+```
+
+
+## search-and-replace within strings
+
+- `str_replace` finds patterns and replaces first occurrence with specified text
+
+```{r echo=TRUE}
+# find , and replace with nothing
+str_replace(c("Smith,","Ford,"), ",", "")
+```
+
+- `str_replace_all` finds patterns and replaces all occurrences with specified text
+
+
+```{r echo=TRUE}
+# find - and replace with nothing
+str_replace_all(c("434-555-1212"), "-", "")
+```
+
+
+## Pad a string with characters
+
+- `str_pad` will pad a string with characters. This is useful for zip codes or ID numbers. 
+- Specify the width, the side of the padding, and what to pad with.
+
+```{r echo=TRUE}
+(zips <- c(22904, 06443, 01331))
+str_pad(zips, width = 5, side = "left", pad = "0")
+```
+
+
+
+
+## Regular Expressions
+
+* Regular expressions are a language for describing text patterns
+* A regular expression is usually formed with some combination of _literal characters_, _character classes_ and _modifiers_
+    + literal character example: `state` (looking for `"state"`)
+    + character class example: `[0-9]` (any number 0 - 9)
+    + modifier example: `+` (1 or more of whatever it follows)
+* Regular expression example: `state[0-9]+` finds patterns such as `state1`, `state12`, `state99` but not `state`
+* We will cover just the basics today as they work in R
+
+
+
+## Character classes
+
+* `[0-9]`, `[a-z]`, `[A-Z]`
+* Define your own: `[0-3a-g]`, `[AEIOUaeiou]`
+* Predefined character classes
+    + `[:alpha:]` all letters
+    + `[:digit:]` numbers 0 - 9
+    + `[:alnum:]` Alphanumeric characters (alpha and digit)
+    + `[:blank:]` Blank characters: space and tab
+    + `[:lower:]` lowercase letters
+    + `[:upper:]` UPPERCASE letters
+    + `[:punct:]` Punctuation characters
+    + `[:print:]` Printable characters: [:alnum:], [:punct:] and space
+    + `[:space:]` Space characters: tab, newline, vertical tab, form feed, carriage return, space 
+
+## Modifiers
+
+- `^`  start of string
+- `$`  end of string
+- `.`  any character except new line
+- `*`  0 or more
+- `+`  1 or more
+- `?`  0 or 1
+- `|`  or (alternative patterns)
+- `{}` quantifier brackets: exactly `{n}`; at least `{n,}`; between `{n,m}`
+- `()` group patterns together
+- `\`  escape character (needs to be escaped itself in R! `\\`)
+- `[]` character class brackets
+
+Note: precede these with a double backslash if you want to treat them as literal characters.
+
+## Shorthand character classes
+
+- `\d` is for "digit"; short for `[0-9]`
+- `\w` is for "word character"; short for `[A-Za-z0-9_]`
+- `\s` is for  "whitespace character"; short for `[\t\r\n\f]`
+
+Negated versions:
+
+- `\D` is short for `[^\d]`
+- `\W` is short for `[^\w]`
+- `\S` is short for `[^\s]`
+
+Recall: The backslash in `R` has to be escaped itself. Hence all these need `\\`
+
+
+## Word boundaries
+
+The metacharacter `\b` matches word boundaries. It allows us to search for whole words or numbers.
+
+The regex `"red"` matches `"red"`, `"redder"`, and `"Fred"`.
+
+The regex `"\\bred"` matches `"red"` and `"redder"` but not `"Fred"`.
+
+The regex `"\\bred\\b"` matches `"red"` but not `"redder"` or `"Fred"`.
+
+## Lookahead and Lookbehind
+
+When we want to match words or patterns that come (or don't come) before or after certain words, we can use lookahead and lookbehind. For example, match "done" if it does not follow "almost".
+
+- Lookahead           `(?=foo)`  What follows is `foo`                              
+- Lookbehind          `(?<=foo)` What precedes is `foo`                             
+- Negative Lookahead  `(?!foo)`  What follows is not `foo`                          
+- Negative Lookbehind `(?<!foo)` What precedes is not `foo`    
+
+
+## Extracting text
+
+- `str_extract` is powerful for extracting patterns from strings, especially when used with regular expressions.
+
+```{r echo=TRUE}
+# extract state abbreviations
+str_extract(c("Austin, TX", "Cary, NC 27518"), 
+            pattern = "[:upper:]{2}")
+# extract site name without ending
+str_extract(c("yahoo.com","virginia.edu"),
+            pattern = "[:lower:]+(?=\\.[:lower:]+)")
+```
+
+## Detect presence or absence of string
+
+- `str_detect` returns `TRUE` or `FALSE` if a pattern is found
+
+```{r echo=TRUE}
+str_detect(c("Dr. Claibourn","Mr. Ford","Ms. Draber"),
+           pattern = "^Dr\\.")
+```
+
+- The resulting logical vector can be used for subsetting data frames or for counting the occurrences of patterns
+
+## Time to practice!
+
+Let's go the workshop R script for demonstrations and exercises.
+
+
+
+## References
+
+- **R for Data Science**: http://r4ds.had.co.nz/ (chs 14 and 16)
+
+- **`lubridate` Tutorial**: http://data.library.virginia.edu/working-with-dates-and-time-in-r-using-the-lubridate-package/
+
+- **Character Manipulation in R workshop**: http://static.lib.virginia.edu/statlab/materials/workshops/CharManipR.zip
+
+
+
+## Thanks for coming
+
+* For statistical consulting: statlab@virginia.edu
+
+* Sign up for more workshops or see past workshops:
+http://data.library.virginia.edu/training/
+
+* Register for the Research Data Services newsletter to be notified of new workshops: http://data.library.virginia.edu/newsletters/
